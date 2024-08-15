@@ -5,9 +5,9 @@ name: "Proton-Mail-Tray: Build and Test"
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "#1-bugfix" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "#1-bugfix" ]
 
 permissions:
   contents: read
