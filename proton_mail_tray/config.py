@@ -12,6 +12,8 @@ logger = logging.getLogger(__name__)
 def get_base_path() -> str:
     """Determine the base path of the application.
 
+    Finds the base path of the application, whether it is ran via executable or source code.
+
     Returns:
         str: The base path of the application
     """
