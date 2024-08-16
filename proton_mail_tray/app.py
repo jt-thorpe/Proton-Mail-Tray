@@ -20,7 +20,7 @@ from proton_mail_tray.utils import is_proton_mail_running, terminate_process
 BASE_PATH = get_base_path()
 ICON_PATH = os.path.join(BASE_PATH, 'resources', 'icon', 'proton-mail.png')
 LOG_DIR = os.path.join(BASE_PATH, 'logs')
-CONFIG_FILE = os.path.join(BASE_PATH, 'config.json')
+CONFIG_FILE = os.path.join(BASE_PATH, 'configs/config.json')
 LOG_FILE = os.path.join(LOG_DIR, 'proton_mail_tray.log')
 
 # Logger
@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 
 
 def setup_logger() -> None:
-    config_file = pathlib.Path("logs/config/logging_config.json")
+    config_file = pathlib.Path("configs/logging_config.json")
     with open(config_file) as f_in:
         config = json.load(f_in)
     logging.config.dictConfig(config)
