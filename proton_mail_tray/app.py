@@ -6,7 +6,7 @@ import sys
 from logging.handlers import RotatingFileHandler
 
 import psutil
-from PySide6.QtCore import QObject, QThread, Signal, Slot
+from PySide6.QtCore import QObject, QThread
 from PySide6.QtGui import QAction, QIcon
 from PySide6.QtWidgets import QApplication, QMenu, QSystemTrayIcon
 
@@ -47,6 +47,13 @@ class ProtonMailTray(QApplication):
         self.tray_icon.setVisible(True)
         self.tray_icon.show()
 
+        # Setup monitor thread; watch for Proton Mail closure
+        self.monitor_thread = QThread()
+        self.monitor = SubprocessMonitor()
+        self.monitor.moveToThread(self.monitor_thread)
+        self.monitor_thread.started.connect(self.monitor.run)
+        self.monitor_thread.start()
+
     def _setup_parser(self) -> argparse.ArgumentParser:
         parser = argparse.ArgumentParser(description='Proton Mail Tray Application')
         parser.add_argument('--proton-mail-path', type=str, help='Manually specify the path to Proton Mail Beta')
@@ -65,7 +72,7 @@ class ProtonMailTray(QApplication):
         if not os.path.exists(log_dir):
             os.makedirs(log_dir)
         handler = RotatingFileHandler(log_file, maxBytes=5*1024*1024, backupCount=2)
-        logging.basicConfig(handlers=[handler], encoding='utf-8', level=logging.DEBUG,
+        logging.basicConfig(handlers=[handler], encoding='utf-8', level=logging.INFO,
                             format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
         return logging.getLogger(__name__)
 
@@ -90,8 +97,9 @@ class ProtonMailTray(QApplication):
             proton_mail_path (str): The path to the Proton Mail Beta executable.
         """
         try:
-            subprocess.Popen([proton_mail_path])
+            process = subprocess.Popen([proton_mail_path])
             self.logger.info("Proton Mail opened successfully")
+            self.monitor.set_proton_mail_subprocess(process)
         except Exception as e:
             self.logger.exception(f"Failed to open Proton Mail: {e}")
 
@@ -110,6 +118,41 @@ class ProtonMailTray(QApplication):
                 self.logger.exception(f"Failed to close Proton Mail: {e}")
         else:
             self.logger.info("Proton Mail is not running")
+
+
+class SubprocessMonitor(QObject):
+    def __init__(self):
+        super().__init__()
+        self._running = True  # Control flag for the worker loop
+        self.proton_mail_subprocess = None
+        self.logger = logging.getLogger(__name__)
+
+    def set_proton_mail_subprocess(self, process: subprocess.Popen) -> None:
+        """Set the Proton Mail subprocess to monitor.
+
+        Args:
+            process (subprocess.Popen): The Proton Mail subprocess to monitor.
+        """
+        self.proton_mail_subprocess = process
+        self.logger.info(f"Subprocess Monitor: Proton Mail subprocess set: {process.pid}")
+
+    def run(self):
+        while self._running:
+            if self.proton_mail_subprocess:
+                if self.proton_mail_subprocess.poll() is None:
+                    self.logger.info("Subprocess Monitor: Proton Mail is running")
+                else:
+                    self.logger.info("Subprocess Monitor: Proton Mail is not running")
+                    self.proton_mail_subprocess.wait()
+            else:
+                self.logger.debug("Subprocess Monitor: No process to check.")
+            QThread.sleep(3)
+
+    def stop(self):
+        self._running = False
+        if self.proton_mail_subprocess and self.proton_mail_subprocess.poll() is None:
+            self.logger.info("Subprocess Monitor: Closing Proton Mail")
+            terminate_process(self.proton_mail_subprocess)
 
 
 def main():
