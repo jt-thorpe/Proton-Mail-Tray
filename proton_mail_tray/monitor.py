@@ -3,8 +3,6 @@ import subprocess
 
 from PySide6.QtCore import QObject, QThread
 
-from proton_mail_tray.utils import terminate_process
-
 logger = logging.getLogger(__name__)
 
 
