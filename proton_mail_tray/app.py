@@ -49,17 +49,17 @@ class ProtonMailTray(QApplication):
         self.args = self.parser.parse_args()
 
         # Tray icon
-        self.tray_icon = QSystemTrayIcon(QIcon(ICON_PATH), self)
+        self.tray_icon = QSystemTrayIcon(QIcon(ICON_PATH))
         if self.tray_icon.icon().isNull():
             logger.warning(f"Unable to find Proton Mail Tray icon at: {ICON_PATH}")
         self.tray_icon.activated.connect(self._on_tray_icon_activated)
 
         # Menu
-        menu = QMenu()
-        quit_action = QAction("Quit")
-        quit_action.triggered.connect(self.quit)
-        menu.addAction(quit_action)
-        self.tray_icon.setContextMenu(menu)
+        self.menu = QMenu()
+        self.quit_action = QAction("Quit")
+        self.quit_action.triggered.connect(self._on_quit)
+        self.menu.addAction(self.quit_action)
+        self.tray_icon.setContextMenu(self.menu)
         self.tray_icon.setVisible(True)
         self.tray_icon.show()
 
@@ -67,7 +67,7 @@ class ProtonMailTray(QApplication):
         self.monitor_thread = QThread()
         self.monitor = SubprocessMonitor()
         self.monitor.moveToThread(self.monitor_thread)
-        self.monitor_thread.started.connect(self.monitor.run)
+        self.monitor_thread.started.connect(self.monitor.start)
         self.monitor_thread.start()
 
     def _on_tray_icon_activated(self) -> None:
@@ -110,11 +110,22 @@ class ProtonMailTray(QApplication):
         else:
             logger.info("Proton Mail is not running")
 
+    def _on_quit(self):
+        """Stop the monitor thread and close the application."""
+        try:
+            self.monitor.stop()
+            self.monitor_thread.exit()
+            self.monitor_thread.wait()
+        except Exception as e:
+            logger.exception(f"Failed to stop monitor thread: {e}")
+            logger.info("Quitting")
+        self.quit()
+
 
 def main():
     setup_logger()
     app = ProtonMailTray(sys.argv)
-    logger.info("Proton Mail Tray App started")
+    logger.info("========== Proton Mail Tray instance started ==========")
     sys.exit(app.exec())
 
 
