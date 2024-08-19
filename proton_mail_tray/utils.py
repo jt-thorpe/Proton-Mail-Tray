@@ -64,11 +64,11 @@ def terminate_process(process: psutil.Process) -> None:
         process.terminate()
         process.wait(timeout=5)  # Wait for the process to terminate
     except NoSuchProcess:
-        logger.warning(f"Process {process.pid} does not exist")
+        logger.exception(f"Process {process.pid} does not exist")
     except AccessDenied:
-        logger.error(f"Access denied while terminating process {process.pid}")
+        logger.exception(f"Access denied while terminating process {process.pid}")
     except TimeoutExpired:
-        logger.error(f"Process {process.pid} did not terminate in time, force killing")
+        logger.exception(f"Process {process.pid} did not terminate in time, force killing")
         process.kill()
     except Exception as e:
         logger.exception(f"Failed to terminate process {process.pid}: {e}")

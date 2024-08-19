@@ -1,11 +1,28 @@
 import json
 import logging
 import os
+import sys
 from typing import Optional
 
 from proton_mail_tray.utils import find_proton_mail_path
 
 logger = logging.getLogger(__name__)
+
+
+def get_base_path() -> str:
+    """Determine the base path of the application.
+
+    Finds the base path of the application, whether it is ran via executable or source code.
+
+    Returns:
+        str: The base path of the application
+    """
+    if getattr(sys, 'frozen', False):  # if executable
+        return sys._MEIPASS
+    else:  # if source
+        base_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+        sys.path.append(base_path)
+        return base_path
 
 
 def load_config(file_path: str) -> dict:
