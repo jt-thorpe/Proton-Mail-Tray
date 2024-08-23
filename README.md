@@ -37,41 +37,17 @@ The application has been tested on Linux Mint 21.3 Xfce 64-bit with Python 3.12.
 
 ## Installation
 
-### Executable
-
 1. Download the `ProtonMailTray-vX.X.X` executable under releases to your desired location.
 2. From the cli run `./ProtonMailTray-vX.X.X --proton-mail-path "/path/to/Proton Mail"`. This will set the path for the executable.
-3. Run the executable.
+3. Run the executable with `./ProtonMailTray-vX.X.X`
 4. (Optional) Add the executable to your startup programs for ease of use.
 
-### Source
+### Building the executable yourself
 
-1. Clone the repository:
-   ```sh
-   git clone https://github.com/yourusername/Proton-Mail-Tray.git
-   ```
-2. Navigate to the project directory:
-   ```sh
-   cd Proton-Mail-Tray
-   ```
-3. Create and activate a virtual environment (recommended):
-   ```sh
-   python -m venv venv
-   source venv/bin/activate 
-   ```
-4. Install the required packages:
-   ```sh
-   pip install -r requirements.txt
-   ```
-5. Run the application:
-   ```sh
-   python -m proton_mail_tray.app
-   ```
-6. Configure the path to the Proton Mail application if required:
-   ```json
-   {
-    "proton_mail_path": "/path/to/Proton Mail Beta executable"
-   }
+1. clone the repo.
+2. navigate into the `Proton-Mail-Tray/` directory.
+3. run `./scripts/build.sh`.
+4. once complete, you can now run the executable as above.
 
 ## Contributing
 
