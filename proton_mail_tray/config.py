@@ -23,7 +23,7 @@ def get_base_path() -> Path:
     else:  # if source
         base_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
         sys.path.append(base_path)
-        return base_path
+        return Path(base_path)
 
 
 def load_config(file_path: str) -> dict:

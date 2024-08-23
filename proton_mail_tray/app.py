@@ -2,8 +2,6 @@ import argparse
 import json
 import logging.config
 import logging.handlers
-import os
-import pathlib
 import subprocess
 import sys
 
@@ -16,20 +14,13 @@ from proton_mail_tray.config import get_base_path, get_proton_mail_path
 from proton_mail_tray.monitor import SubprocessMonitor
 from proton_mail_tray.utils import is_proton_mail_running, terminate_process
 
-# Constants
-BASE_PATH = get_base_path()
-ICON_PATH = os.path.join(BASE_PATH, 'resources', 'icon', 'proton-mail.png')
-LOG_DIR = os.path.join(BASE_PATH, 'logs')
-CONFIG_FILE = os.path.join(BASE_PATH, 'configs/config.json')
-LOG_FILE = os.path.join(LOG_DIR, 'proton_mail_tray.log')
-
 # Logger
 logger = logging.getLogger(__name__)
 
 
-def setup_logger() -> None:
-    config_file = pathlib.Path("configs/logging_config.json")
-    with open(config_file) as f_in:
+def setup_logger(logging_config_path: str) -> None:
+    with open(logging_config_path) as f_in:
+        print(f_in)
         config = json.load(f_in)
     logging.config.dictConfig(config)
 
@@ -41,17 +32,16 @@ def setup_parser() -> argparse.ArgumentParser:
 
 
 class ProtonMailTray(QApplication):
-    def __init__(self, sys_argv):
+    def __init__(self, sys_argv, path_dict: dict):
         super().__init__(sys_argv)
 
-        # Parser & args
-        self.parser = setup_parser()
-        self.args = self.parser.parse_args()
+        # Paths
+        self.path_dict = path_dict
 
         # Tray icon
-        self.tray_icon = QSystemTrayIcon(QIcon(ICON_PATH))
+        self.tray_icon = QSystemTrayIcon(QIcon(self.path_dict['icon_path']))
         if self.tray_icon.icon().isNull():
-            logger.warning(f"Unable to find Proton Mail Tray icon at: {ICON_PATH}")
+            logger.warning(f"Unable to find Proton Mail Tray icon at: {self.path_dict['icon_path']}")
         self.tray_icon.activated.connect(self._on_tray_icon_activated)
 
         # Menu
@@ -79,7 +69,7 @@ class ProtonMailTray(QApplication):
         if is_proton_mail_running():
             self._close_proton_mail()
         else:
-            self._open_proton_mail(get_proton_mail_path(self.args, CONFIG_FILE))
+            self._open_proton_mail(self.path_dict['proton_mail_path'])
 
     def _open_proton_mail(self, proton_mail_path: str) -> None:
         """Open Proton Mail.
@@ -123,8 +113,25 @@ class ProtonMailTray(QApplication):
 
 
 def main():
-    setup_logger()
-    app = ProtonMailTray(sys.argv)
+    # Parser & args
+    parser = setup_parser()
+    args = parser.parse_args()
+
+    # Paths
+    base_path = get_base_path()
+    paths = {
+        'base_path': str(base_path),
+        'icon_path': str(base_path / 'resources' / 'icon' / 'proton-mail.png'),
+        'config_path': str(base_path / 'configs' / 'config.json'),
+        'logging_config_path': str(base_path / 'configs' / 'logging_config.json'),
+        'proton_mail_path': get_proton_mail_path(args, str(base_path / 'configs' / 'config.json'))
+    }
+
+    # Logger
+    setup_logger(paths['logging_config_path'])
+
+    # Application
+    app = ProtonMailTray(sys.argv, path_dict=paths)
     logger.info("========== Proton Mail Tray instance started ==========")
     sys.exit(app.exec())
 
