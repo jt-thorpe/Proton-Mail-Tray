@@ -11,8 +11,7 @@ Proton-Mail-Tray is a lightweight Linux application that provides a tray icon fo
   - [Security Considerations](#security-considerations)
   - [Requirements](#requirements)
   - [Installation](#installation)
-    - [Executable](#executable)
-    - [Source](#source)
+    - [Building the executable yourself](#building-the-executable-yourself)
   - [Contributing](#contributing)
   - [License](#license)
 
