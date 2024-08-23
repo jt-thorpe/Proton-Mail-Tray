@@ -1,14 +1,13 @@
-from proton_mail_tray.config import (get_base_path, get_proton_mail_path,
-                                     load_config, save_config)
 import argparse
 import json
 import os
 import sys
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 
-base_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-sys.path.append(base_path)
+from proton_mail_tray.config import (get_base_path, get_proton_mail_path,
+                                     load_config, save_config)
 
 
 class TestGetBasePath(unittest.TestCase):
@@ -16,7 +15,7 @@ class TestGetBasePath(unittest.TestCase):
 
     def test_get_base_path(self):
         """Test getting the base path."""
-        expected = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+        expected = Path.cwd()
         actual = get_base_path()
 
         self.assertEqual(expected, actual)
