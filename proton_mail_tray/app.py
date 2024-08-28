@@ -4,6 +4,7 @@ import logging.config
 import logging.handlers
 import subprocess
 import sys
+from pathlib import Path
 
 import psutil
 from PySide6.QtCore import QThread
@@ -19,19 +20,36 @@ logger = logging.getLogger(__name__)
 
 
 def setup_logger(logging_config_path: str) -> None:
+    """Setup the logger using the logging configuration file.
+
+    Args:
+        logging_config_path (str): The path to the logging configuration file.
+    """
     with open(logging_config_path) as f_in:
-        print(f_in)
         config = json.load(f_in)
+        config['handlers']['file']['filename'] = str(Path(sys._MEIPASS + config['handlers']['file']['filename']))
     logging.config.dictConfig(config)
 
 
 def setup_parser() -> argparse.ArgumentParser:
+    """Setup the command line parser.
+
+    Returns:
+        argparse.ArgumentParser: The command line parser.
+    """
     parser = argparse.ArgumentParser(description='Proton Mail Tray Application')
     parser.add_argument('--proton-mail-path', type=str, help='Manually specify the path to Proton Mail Beta')
     return parser
 
 
 class ProtonMailTray(QApplication):
+    """Proton Mail Tray Application.
+
+    Args:
+        sys_argv (list): The system arguments.
+        path_dict (dict): A dictionary containing the paths used by the application.
+    """
+
     def __init__(self, sys_argv, path_dict: dict):
         super().__init__(sys_argv)
 
@@ -128,6 +146,7 @@ def main():
     }
 
     # Logger
+    print(paths['base_path'])
     setup_logger(paths['logging_config_path'])
 
     # Application

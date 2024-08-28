@@ -21,7 +21,7 @@
             "class": "logging.handlers.RotatingFileHandler",
             "level": "DEBUG",
             "formatter": "detailed",
-            "filename": "logs/proton_mail_tray.log",
+            "filename": "/logs/proton_mail_tray.log",
             "maxBytes": 300000,
             "backupCount": 3
         }
